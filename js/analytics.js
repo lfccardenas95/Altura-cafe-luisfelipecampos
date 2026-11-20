@@ -137,11 +137,20 @@
     return datos;
   }
 
+  /* Con DEBUG_MODE, cada evento lleva también debug_mode: true para que
+     aparezca en DebugView (además del debug_mode de gtag('config')). */
+  function paraGA(datos) {
+    var copia = {};
+    for (var k in datos) copia[k] = datos[k];
+    if (DEBUG) copia.debug_mode = true;
+    return copia;
+  }
+
   /* Envía un evento a GA4 (si hay ID) y lo muestra en el monitor. */
   function enviarEvento(nombre, parametros) {
     var datos = conMoneda(parametros || {});
     registrar(nombre, datos, "evento");
-    if (CONECTADO) window.gtag("event", nombre, datos);
+    if (CONECTADO) window.gtag("event", nombre, paraGA(datos));
   }
 
   /* Envía un evento y luego navega a "url".
@@ -160,8 +169,7 @@
 
     if (!CONECTADO) { navegar(); return; }
 
-    var conRetorno = {};
-    for (var k in datos) conRetorno[k] = datos[k];
+    var conRetorno = paraGA(datos);
     conRetorno.event_callback = navegar;
     conRetorno.event_timeout = 1000;
     window.gtag("event", nombre, conRetorno);
